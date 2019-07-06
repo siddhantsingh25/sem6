@@ -1,0 +1,70 @@
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>;
+#include <ThingSpeak.h>;
+const char* ssid = "Rahul";
+const char* password = "";
+
+WiFiClient client;
+unsigned long myChannelNumber =758336;
+const char* myWriteAPIKey = "NT6O4FGNDO1TGJ0V";
+
+int asmoke = A0;
+int smoke = D0;
+int flame = D2;
+int smoke_value_A;
+int smoke_value_D;
+int flame_value;
+WiFiServer server(80);
+
+void setup() {
+Serial.begin(115200);
+delay(10);
+
+ pinMode(asmoke, INPUT);
+ pinMode(smoke, INPUT);
+ pinMode(flame, INPUT);
+ pinMode(D6, OUTPUT);
+ pinMode(D7, OUTPUT);
+
+ Serial.println();
+ Serial.print("connecting to ");
+ Serial.println(ssid);
+ WiFi.begin(ssid, password);
+ while(WiFi.status() != WL_CONNECTED){
+  delay(500);
+  Serial.print(".");
+ }
+ Serial.println("");
+ Serial.println("WiFi Connected");
+ Serial.println(WiFi.localIP());
+ ThingSpeak.begin(client);
+ 
+}
+
+void loop() 
+{
+  smoke_value_A = analogRead(asmoke);
+  smoke_value_D = digitalRead(smoke);
+  flame_value = digitalRead(flame);
+ Serial.print("Analog Value of Smoke sensor : ");
+ Serial.println(smoke_value_A);
+ Serial.print("Digital Reading of Smoke Sensor : ");
+ Serial.println(smoke_value_D);
+ Serial.print("Digital Reading of flame Sensor : ");
+ Serial.println(flame_value);
+ Serial.println("");
+ //delay(1000);
+
+ 
+// delay(100);
+ ThingSpeak.writeField(myChannelNumber, 1,flame_value,myWriteAPIKey);
+ ThingSpeak.writeField(myChannelNumber, 2,smoke_value_A,myWriteAPIKey);
+while(digitalRead(flame)==0 || digitalRead(smoke)==0)
+{
+ digitalWrite(D6, HIGH);
+ digitalWrite(D7, HIGH); 
+}
+ digitalWrite(D6, LOW);
+ digitalWrite(D7, LOW);
+
+}
